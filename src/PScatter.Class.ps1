@@ -5,12 +5,15 @@ class PScatter {
             Write-Error -Exception $exception -Category InvalidArgument -TargetObject $Path
             return
         }
-        if (-Not ($Path -match "\S+\.psm1")) {
-            $exception = ([System.ArgumentOutOfRangeException]::new("Path", "$Path is not a valid .psm1 file"))
+
+        $moduleFiles = Get-ChildItem -Path $Path | Where-Object {$_.Extension -eq ".psm1"}
+        if ($moduleFiles.Count -le 0) {
+            $exception = ([System.ArgumentOutOfRangeException]::new("Path", "$Path doesn't contain a valid .psm1 file"))
             Write-Error -Exception $exception -Category InvalidArgument -TargetObject $Path
             return
         }
-        Import-Module $Path -Global -Force
+
+        $moduleFiles | ForEach-Object { Import-Module $_.FullName -Global -Force}
     }
 }
 
